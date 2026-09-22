@@ -2,7 +2,7 @@ import { MODULE_MAP, MODULES, ROLE_PATHS } from "../../content/modules";
 import { Link } from "../../router";
 import { useAppState } from "../../store";
 import { ROLE_LABELS, ROLES } from "../../types";
-import { Icon } from "../icons";
+import { CategoryTile, Icon } from "../icons";
 
 export function Library() {
   const state = useAppState();
@@ -11,10 +11,7 @@ export function Library() {
       <header className="page-head">
         <span className="eyebrow">Curriculum</span>
         <h1>Module library</h1>
-        <p className="lede">
-          {MODULES.length} modules, each built on a real clinic workflow: the legacy way, the Lupa way, a knowledge check, and a hands-on simulation
-          that must be completed correctly before the next module unlocks.
-        </p>
+        <p className="lede">{MODULES.length} modules. Each one: old workflow → Lupa, a quiz, then a gated hands-on simulation.</p>
       </header>
 
       <section className="panel">
@@ -42,6 +39,7 @@ export function Library() {
           const passes = state.attempts.filter((a) => a.moduleId === m.id && a.passed).length;
           return (
             <Link key={m.id} to={`/team/library/${m.id}`} className="lib-card">
+              <CategoryTile category={m.category} />
               <span className="eyebrow">
                 {m.category} · ~{m.minutes} min
               </span>

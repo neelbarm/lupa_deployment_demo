@@ -114,7 +114,13 @@ export interface TrainingModule {
 
 /* ---------- CRM / progress data ---------- */
 
-export type ClinicStage = "Kickoff" | "Training" | "Go-live ready" | "Live";
+/** Lupa's migration phases, as described on lupapets.com/us/migrations. */
+export type ClinicStage = "Scoping" | "Configuration" | "Training" | "Go-live" | "Hypercare";
+
+export const STAGES: ClinicStage[] = ["Scoping", "Configuration", "Training", "Go-live", "Hypercare"];
+
+/** A clinic in hypercare is already live on Lupa. */
+export const isLive = (stage: ClinicStage) => stage === "Hypercare";
 
 export interface Clinic {
   id: string;

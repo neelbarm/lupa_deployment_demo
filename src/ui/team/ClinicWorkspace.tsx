@@ -17,7 +17,7 @@ import {
 } from "../../logic/metrics";
 import { Link, useNav } from "../../router";
 import { actions, KIND_LABEL, useAppState } from "../../store";
-import { ROLE_LABELS, ROLE_SHORT, ROLES, type AppState, type Role } from "../../types";
+import { isLive, ROLE_LABELS, ROLE_SHORT, ROLES, STAGES, type AppState, type Role } from "../../types";
 import { Icon } from "../icons";
 import { Avatar, BenchPill, Empty, Meter, Modal, Ring, StatusPill, toast, useTick } from "../primitives";
 import { Feed, NoteModal, ReminderModal } from "./shared";
@@ -57,18 +57,17 @@ export function ClinicWorkspace({ clinicId, tab = "overview" }: { clinicId: stri
     <div className="page">
       <header className="clinic-head">
         <div>
-          <span className="eyebrow">
-            {clinic.city} · {clinic.legacyPims} → Lupa · {clinic.contactName} ({clinic.contactRole})
-          </span>
           <h1>{clinic.name}</h1>
           <div className="clinic-meta">
-            <span className={`stage stage-${clinic.stage.replace(/\s/g, "").toLowerCase()}`}>{clinic.stage}</span>
             <span>
               <Icon name="calendar" size={15} /> Go-live {fmtDate(clinic.goLiveDate)} ·{" "}
               <strong>{sum.daysToGoLive > 0 ? `${sum.daysToGoLive} days to go` : sum.daysToGoLive === 0 ? "today" : `live ${-sum.daysToGoLive} days`}</strong>
             </span>
             <span>
-              <Icon name="users" size={15} /> {sum.staff.length} staff · {sum.certifiedStaff} go-live ready
+              <Icon name="users" size={15} /> {sum.staff.length} staff · {sum.certifiedStaff} ready
+            </span>
+            <span className="fine">
+              {clinic.city} · {clinic.contactName}, {clinic.contactRole}
             </span>
           </div>
         </div>
@@ -96,12 +95,28 @@ export function ClinicWorkspace({ clinicId, tab = "overview" }: { clinicId: stri
         </div>
       </header>
 
-      <nav className="tabs" role="tablist">
+      <ol className="phases" aria-label="Migration phase">
+        {STAGES.map((st, i) => {
+          const at = STAGES.indexOf(clinic.stage);
+          return (
+            <li key={st} className={i < at ? "is-done" : i === at ? "is-current" : ""}>
+              <span className="phase-dot">{i < at ? <Icon name="check" size={12} /> : i + 1}</span>
+              {st}
+            </li>
+          );
+        })}
+      </ol>
+
+      <nav className="seg-tabs" role="tablist">
         {TABS.map((x) => (
           <Link key={x.key} to={`/team/clinic/${clinicId}${x.key === "overview" ? "" : "/" + x.key}`} className={t === x.key ? "is-on" : ""}>
             {x.label}
             {x.key === "staff" && sum.atRisk > 0 && <b className="tab-badge">{sum.atRisk}</b>}
-            {x.key === "benchmarks" && <span className="fine"> {sum.benchmarks.filter((b) => b.state === "met").length}/{sum.benchmarks.length}</span>}
+            {x.key === "benchmarks" && (
+              <b className="tab-count">
+                {sum.benchmarks.filter((b) => b.state === "met").length}/{sum.benchmarks.length}
+              </b>
+            )}
           </Link>
         ))}
       </nav>
@@ -140,7 +155,7 @@ function Overview({ sum, state, onRemind }: { sum: ClinicSummary; state: AppStat
                 <span>
                   {ROLE_LABELS[r.role]} <span className="fine">· {r.count}</span>
                 </span>
-                <Meter value={r.readiness} marker={sum.clinic.stage === "Live" ? undefined : pace} />
+                <Meter value={r.readiness} marker={isLive(sum.clinic.stage) ? undefined : pace} />
                 <span className="num">{r.readiness}%</span>
               </div>
             ))}
@@ -399,7 +414,7 @@ function StaffTable({ sum, onRemind }: { sum: ClinicSummary; onRemind: (ids: str
                 </td>
                 <td>
                   <div className="meter-row">
-                    <Meter value={s.readiness} marker={sum.clinic.stage === "Live" ? undefined : pace} />
+                    <Meter value={s.readiness} marker={isLive(sum.clinic.stage) ? undefined : pace} />
                     <span className="num">{s.readiness}%</span>
                   </div>
                 </td>

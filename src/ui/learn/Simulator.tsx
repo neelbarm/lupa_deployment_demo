@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { HINT_PENALTY, ERROR_PENALTY, simScore, valueMatches } from "../../logic/scoring";
 import type { NavKey, SimItem, TrainingModule } from "../../types";
-import { Icon, type IconName } from "../icons";
+import { Icon, LupaMark, type IconName } from "../icons";
 
 export interface SimResult {
   errors: number;
@@ -161,16 +161,16 @@ export function Simulator({ module, clinicName, onError, onStep, onComplete }: P
 
       <div className={`lupa-app ${finished ? "is-finished" : ""}`}>
         <div className="lupa-top">
-          <span className="lupa-brand">
-            <span className="lupa-dot" /> lupa
+          <span className="lupa-site">
+            <span className="lupa-site-logo">
+              <LupaMark size={22} tone="white" />
+            </span>
+            <span>
+              <strong>{clinicName}</strong>
+              <em>Training mode</em>
+            </span>
+            <Icon name="chevron" size={13} />
           </span>
-          <span className="lupa-clinic">{clinicName}</span>
-          <span className="lupa-search">
-            <Icon name="search" size={14} /> Search or ask Jerry…
-          </span>
-          <span className="lupa-user">Training mode</span>
-        </div>
-        <div className="lupa-body">
           <nav className="lupa-nav" aria-label="Lupa navigation (simulated)">
             {NAV.map((n) => {
               const id = `nav:${n.key}`;
@@ -181,6 +181,7 @@ export function Simulator({ module, clinicName, onError, onStep, onComplete }: P
                   className={`lupa-nav-item ${active ? "is-active" : ""} ${highlight === id ? "is-hint" : ""}`}
                   onClick={() => (active && step.target !== id ? undefined : attempt(id))}
                   disabled={finished}
+                  title={n.label}
                 >
                   <Icon name={n.icon} size={16} />
                   <span>{n.label}</span>
@@ -188,6 +189,12 @@ export function Simulator({ module, clinicName, onError, onStep, onComplete }: P
               );
             })}
           </nav>
+          <span className="lupa-tools">
+            <Icon name="search" size={16} />
+            <Icon name="bell" size={16} />
+          </span>
+        </div>
+        <div className="lupa-body">
           <main className="lupa-screen">
             <header className="lupa-screen-head">
               <h4>{screen.title}</h4>
@@ -349,7 +356,7 @@ function Item({
               autoComplete="off"
             />
             <button type="submit" className="lupa-enter" disabled={finished || doneTarget} aria-label="Submit">
-              ↵
+              Enter ↵
             </button>
           </span>
         </form>

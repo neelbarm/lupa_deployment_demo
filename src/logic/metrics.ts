@@ -276,7 +276,7 @@ export function quizMisses(state: AppState, clinicId: string): { moduleId: strin
 
 /** Human label for the element a learner clicked by mistake. */
 export function elementLabel(moduleId: string, elementId: string): string {
-  if (elementId.startsWith("nav:")) return `${cap(elementId.slice(4))} (sidebar)`;
+  if (elementId.startsWith("nav:")) return `${cap(elementId.slice(4))} (top bar)`;
   if (elementId.startsWith("value:")) return `entered “${elementId.slice(6)}”`;
   const m = MODULE_MAP[moduleId];
   if (!m) return elementId;

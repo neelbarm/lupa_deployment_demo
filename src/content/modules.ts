@@ -158,8 +158,8 @@ export const MODULES: TrainingModule[] = [
           id: "nav",
           screen: "home",
           target: "nav:patients",
-          instruction: "Open the Patients area from the sidebar.",
-          hint: "Look for Patients in the left-hand navigation.",
+          instruction: "Open the Patients area from the top bar.",
+          hint: "Look for Patients in the top navigation bar.",
           wrong: { "nav:calendar": "Calendar shows bookings, but you need the patient's history first." },
         },
         {
@@ -372,7 +372,7 @@ export const MODULES: TrainingModule[] = [
           screen: "home",
           target: "nav:calendar",
           instruction: "Open the Calendar.",
-          hint: "Calendar is in the sidebar.",
+          hint: "Calendar is in the top bar.",
         },
         {
           id: "slot",
@@ -528,7 +528,7 @@ export const MODULES: TrainingModule[] = [
         },
       ],
       steps: [
-        { id: "nav", screen: "home", target: "nav:messages", instruction: "Open the shared Messages inbox.", hint: "Messages is in the sidebar." },
+        { id: "nav", screen: "home", target: "nav:messages", instruction: "Open the shared Messages inbox.", hint: "Messages is in the top bar." },
         { id: "open", screen: "inbox", target: "th-maria", instruction: "Open the new WhatsApp thread.", hint: "It's the one marked New." },
         {
           id: "link",
@@ -664,7 +664,7 @@ export const MODULES: TrainingModule[] = [
         },
       ],
       steps: [
-        { id: "nav", screen: "home", target: "nav:billing", instruction: "Go to Billing.", hint: "Billing is in the sidebar." },
+        { id: "nav", screen: "home", target: "nav:billing", instruction: "Go to Billing.", hint: "Billing is in the top bar." },
         { id: "open", screen: "billing", target: "inv-biscuit", instruction: "Open Biscuit's invoice.", hint: "It's marked Ready." },
         {
           id: "review",
@@ -866,7 +866,7 @@ export const MODULES: TrainingModule[] = [
         },
       ],
       steps: [
-        { id: "nav", screen: "home", target: "nav:tasks", instruction: "Open your Tasks board.", hint: "Tasks is in the sidebar." },
+        { id: "nav", screen: "home", target: "nav:tasks", instruction: "Open your Tasks board.", hint: "Tasks is in the top bar." },
         { id: "open", screen: "tasks", target: "task-luna", instruction: "Open Luna's weigh-in task.", hint: "The task marked New." },
         { id: "claim", screen: "tasks", target: "claim", instruction: "Claim the task so your colleagues know you've got it.", hint: "Press Claim task." },
         { id: "weight", screen: "vitals", target: "weight", value: "4.2", instruction: "The scale reads 4.2 kg. Record Luna's weight.", hint: "Type 4.2 and press Enter." },
@@ -1062,7 +1062,7 @@ export const MODULES: TrainingModule[] = [
         },
       ],
       steps: [
-        { id: "nav", screen: "home", target: "nav:inventory", instruction: "Open Inventory.", hint: "Inventory is in the sidebar." },
+        { id: "nav", screen: "home", target: "nav:inventory", instruction: "Open Inventory.", hint: "Inventory is in the top bar." },
         { id: "open-rabies", screen: "inv", target: "al-rabies", instruction: "Open the expiring rabies vaccine alert.", hint: "Batch R-2291." },
         { id: "usefirst", screen: "inv", target: "use-first", instruction: "The batch is still good for 30 days. Make sure it's used before newer stock.", hint: "Mark it Use first.", wrong: { dispose: "It's still in date. Disposing it wastes 14 doses." } },
         { id: "open-maro", screen: "inv", target: "al-maro", instruction: "Now open the low-stock maropitant alert.", hint: "Maropitant 10 mg/mL." },
@@ -1432,7 +1432,7 @@ export const MODULES: TrainingModule[] = [
         },
       ],
       steps: [
-        { id: "nav", screen: "home", target: "nav:reports", instruction: "Open Reports.", hint: "Reports is in the sidebar." },
+        { id: "nav", screen: "home", target: "nav:reports", instruction: "Open Reports.", hint: "Reports is in the top bar." },
         { id: "open", screen: "reports", target: "kpi-noshow", instruction: "Drill into the No-shows KPI.", hint: "The row marked Alert." },
         { id: "breakdown", screen: "reports", target: "breakdown", value: "Appointment type", instruction: "Break it down to see which kind of visit is affected.", hint: "By Appointment type." },
         { id: "schedule", screen: "reports", target: "schedule", value: "Weekly · Monday 8am", instruction: "Schedule this for the partners every Monday.", hint: "Weekly · Monday 8am." },
@@ -1509,7 +1509,7 @@ export const MODULES: TrainingModule[] = [
         },
       ],
       steps: [
-        { id: "nav", screen: "home", target: "nav:rota", instruction: "Open the Rota.", hint: "Rota is in the sidebar." },
+        { id: "nav", screen: "home", target: "nav:rota", instruction: "Open the Rota.", hint: "Rota is in the top bar." },
         { id: "open", screen: "rota", target: "r-chen", instruction: "Open Dr. Chen's shift.", hint: "Dr. Chen's row." },
         { id: "absence", screen: "rota", target: "absence", value: "Sick", instruction: "Mark her as sick.", hint: "Sick." },
         { id: "reassign", screen: "rota", target: "reassign", value: "Dr. Okoro (from 12:00) + Dr. Patel", instruction: "Reassign her appointments to the vets on shift.", hint: "Don't cancel. Reassign to Dr. Okoro + Dr. Patel." },

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { MemoryRouter, Link } from "../router";
 import { actions, useAppState } from "../store";
-import { ROLE_SHORT } from "../types";
+import { isLive, ROLE_SHORT } from "../types";
 import { AppRoutes } from "./AppRoutes";
 import { Icon } from "./icons";
 import { Modal, toast } from "./primitives";
+import { ThemeToggle } from "./ThemeToggle";
 
 const DEFAULT_LEARNER = "riverside-jess.morales";
 
@@ -27,7 +28,10 @@ export function Presenter() {
   const [reset, setReset] = useState(false);
   const staff = state.staff.find((s) => s.id === learner) ?? state.staff[0];
   const clinicId = staff.clinicId;
-  const learners = state.staff.filter((s) => state.clinics.find((c) => c.id === s.clinicId)?.stage !== "Live");
+  const learners = state.staff.filter((s) => {
+    const c = state.clinics.find((x) => x.id === s.clinicId);
+    return c && !isLive(c.stage);
+  });
 
   return (
     <div className="presenter">
@@ -42,7 +46,7 @@ export function Presenter() {
           <span className="fine">Clinic learner</span>
           <select id="presenter-learner" value={learner} onChange={(e) => setLearner(e.target.value)}>
             {state.clinics
-              .filter((c) => c.stage !== "Live")
+              .filter((c) => !isLive(c.stage))
               .map((c) => (
                 <optgroup key={c.id} label={c.name}>
                   {learners
@@ -57,6 +61,7 @@ export function Presenter() {
           </select>
         </label>
         <span className="spacer" />
+        <ThemeToggle />
         <button className={`btn btn-sm ${script ? "btn-primary" : "btn-quiet"}`} onClick={() => setScript(!script)}>
           <Icon name="note" size={14} /> Demo script
         </button>

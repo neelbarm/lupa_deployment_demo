@@ -3,7 +3,7 @@ import { MODULE_MAP } from "../../content/modules";
 import { expectedPace, fmtDate, relTime, summarizeClinic } from "../../logic/metrics";
 import { Link } from "../../router";
 import { useAppState } from "../../store";
-import { ROLE_SHORT } from "../../types";
+import { isLive, ROLE_SHORT } from "../../types";
 import { Icon } from "../icons";
 import { Avatar, CountUp, Meter, StatusPill, useTick } from "../primitives";
 import { Feed, ReminderModal } from "./shared";
@@ -13,7 +13,7 @@ export function Portfolio() {
   useTick();
   const [remind, setRemind] = useState<string[] | null>(null);
   const clinics = useMemo(() => state.clinics.map((c) => summarizeClinic(state, c.id)), [state]);
-  const active = clinics.filter((c) => c.clinic.stage !== "Live");
+  const active = clinics.filter((c) => !isLive(c.clinic.stage));
   const learners = active.flatMap((c) => c.staff);
   const avgReady = active.length ? Math.round(active.reduce((a, c) => a + c.readiness, 0) / active.length) : 0;
   const atRisk = learners.filter((s) => s.status === "at_risk");
@@ -109,7 +109,7 @@ export function Portfolio() {
                     </td>
                     <td>
                       <div className="meter-row">
-                        <Meter value={c.readiness} marker={c.clinic.stage === "Live" ? undefined : pace} />
+                        <Meter value={c.readiness} marker={isLive(c.clinic.stage) ? undefined : pace} />
                         <span className="num">{c.readiness}%</span>
                       </div>
                     </td>

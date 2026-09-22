@@ -8,6 +8,8 @@ Deployments fail when clinic staff don't know the new workflow. Lupa Academy fix
 - **Lupa-facing: Deployment Console.** Readiness by clinic, role and person against the pace needed for go-live. It also has a live activity feed, a skill matrix ("who knows what"), go-live benchmarks, the most-missed workflow steps, per-attempt mistake detail, reminders with read receipts, module assignment, recertification and a touchpoint log.
 - **Presenter mode.** Both views side by side, sharing one live store, with a step-by-step demo script.
 
+Clinics move through Lupa's own migration phases: **Scoping → Configuration → Training → Go-live → Hypercare**. Lupa Academy powers the Training phase, and its benchmarks decide when a clinic is ready for go-live. The UI follows lupapets.com: violet and aubergine palette, Satoshi and Geist type, pill buttons, and the product's dark top bar. There's a light/dark/system theme toggle in every header.
+
 ## Run it
 
 ```bash

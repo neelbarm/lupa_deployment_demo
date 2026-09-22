@@ -61,7 +61,7 @@ export function Meter({ value: target, tone, marker }: { value: number; tone?: s
     const id = requestAnimationFrame(() => setValue(target));
     return () => cancelAnimationFrame(id);
   }, [target]);
-  const t = tone ?? (target >= 90 ? "good" : target >= 60 ? "info" : target >= 30 ? "warn" : "crit");
+  const t = tone ?? (target >= 90 ? "good" : target >= 35 ? "info" : target >= 15 ? "warn" : "crit");
   return (
     <span className="meter" role="meter" aria-valuenow={target} aria-valuemin={0} aria-valuemax={100}>
       <span className={`meter-fill tone-${t}`} style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
@@ -106,7 +106,7 @@ export function Ring({ value: target, size = 120, label }: { value: number; size
   const value = useCountUp(target, 900);
   const r = size / 2 - 9;
   const c = 2 * Math.PI * r;
-  const tone = target >= 90 ? "good" : target >= 60 ? "info" : target >= 30 ? "warn" : "crit";
+  const tone = target >= 90 ? "good" : target >= 35 ? "info" : target >= 15 ? "warn" : "crit";
   return (
     <div className="ring" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>

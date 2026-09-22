@@ -3,8 +3,9 @@ import { MODULE_MAP } from "../../content/modules";
 import { DAY, fmtDate, isCertified, relTime, summarizeClinic, summarizeStaff } from "../../logic/metrics";
 import { Link, useNav } from "../../router";
 import { actions, greetingName, useAppState } from "../../store";
-import { ROLE_LABELS, ROLES } from "../../types";
-import { Icon } from "../icons";
+import { isLive, ROLE_LABELS, ROLES } from "../../types";
+import { CategoryTile, Icon, LupaWordmark } from "../icons";
+import { ThemeToggle } from "../ThemeToggle";
 import { Avatar, Meter, ProficiencyPill, Ring, useTick } from "../primitives";
 
 /** Stand-in for the magic-link login each staff member gets in their invite email. */
@@ -22,7 +23,7 @@ export function LearnLogin() {
       </header>
       <div className="seg" role="tablist">
         {state.clinics
-          .filter((c) => c.stage !== "Live")
+          .filter((c) => !isLive(c.stage))
           .map((c) => (
             <button key={c.id} role="tab" aria-selected={c.id === clinicId} className={c.id === clinicId ? "is-on" : ""} onClick={() => setClinicId(c.id)}>
               {c.name}
@@ -159,6 +160,7 @@ export function LearnerHome({ staffId }: { staffId: string }) {
                 <span className="path-node">{cert ? <Icon name="check" size={16} /> : locked ? <Icon name="lock" size={14} /> : i + 1}</span>
                 <div className="path-body">
                   <div className="path-top">
+                    <CategoryTile category={mod.category} small />
                     <strong>{mod.title}</strong>
                     {extra && <span className="pill pill-info">Assigned by Lupa</span>}
                     {m.overdue && <span className="pill pill-crit">Overdue</span>}
@@ -219,40 +221,42 @@ export function LearnerShell({ staffId, children }: { staffId?: string; children
   const state = useAppState();
   const { go, embedded } = useNav();
   const staff = staffId ? state.staff.find((s) => s.id === staffId) : undefined;
+  const clinic = staff ? state.clinics.find((c) => c.id === staff.clinicId) : undefined;
   const unread = staff ? state.reminders.filter((r) => r.staffId === staff.id && !r.readAt).length : 0;
   return (
     <div className="learner-shell">
-      <header className="learner-bar">
-        <Link to={staff ? `/learn/${staff.id}` : "/learn"} className="brand">
-          <span className="brand-mark">
-            <Icon name="book" size={16} />
-          </span>
-          <span>
-            Lupa <em>Academy</em>
-          </span>
+      <header className="chrome">
+        <Link to={staff ? `/learn/${staff.id}` : "/learn"} className="chrome-brand">
+          <LupaWordmark tone="white" />
+          <span className="chrome-tag chrome-tag-academy">Academy</span>
         </Link>
-        <span className="learner-bar-tag">Clinic view</span>
+        {clinic && (
+          <span className="switcher-btn is-static">
+            <span className="switcher-name">{clinic.name}</span>
+            <span className="switcher-sub">Training for go-live</span>
+          </span>
+        )}
         <span className="spacer" />
-        {staff && (
-          <>
-            <span className={`bell ${unread ? "has-unread" : ""}`} title={`${unread} unread reminder(s)`} onClick={() => go(`/learn/${staff.id}`)}>
-              <Icon name="bell" size={18} />
-              {unread > 0 && <b>{unread}</b>}
-            </span>
-            <span className="who">
-              <Avatar name={staff.name} size={28} />
-              <span className="who-name">{staff.name}</span>
-            </span>
-            <button className="btn btn-sm btn-quiet" onClick={() => go("/learn")}>
-              Switch user
-            </button>
-          </>
-        )}
-        {!embedded && (
-          <Link to="/" className="btn btn-sm btn-quiet">
-            Exit
-          </Link>
-        )}
+        <div className="chrome-right">
+          {!embedded && <ThemeToggle />}
+          {staff && (
+            <>
+              <button className={`chrome-icon bell ${unread ? "has-unread" : ""}`} title={`${unread} unread reminder(s)`} onClick={() => go(`/learn/${staff.id}`)}>
+                <Icon name="bell" size={18} />
+                {unread > 0 && <b>{unread}</b>}
+              </button>
+              <button className="chrome-me chrome-user" onClick={() => go("/learn")} title="Switch user">
+                <Avatar name={staff.name} size={30} />
+                <span className="who-name">{staff.name}</span>
+              </button>
+            </>
+          )}
+          {!embedded && (
+            <Link to="/" className="chrome-icon" title="Exit demo">
+              <Icon name="x" size={17} />
+            </Link>
+          )}
+        </div>
       </header>
       <main className="learner-main">{children}</main>
     </div>

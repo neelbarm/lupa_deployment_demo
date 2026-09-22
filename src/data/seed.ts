@@ -3,7 +3,7 @@ import { moduleScore, quizScore, simScore } from "../logic/scoring";
 import { DAY } from "../logic/metrics";
 import type { ActivityEvent, AppState, Attempt, Benchmark, Clinic, Note, Reminder, Role, Staff } from "../types";
 
-export const STATE_VERSION = 4;
+export const STATE_VERSION = 5;
 
 /** The Lupa deployment specialist shown throughout the console. Change to your own name. */
 export const SPECIALIST = "Neel Barmecha";
@@ -78,7 +78,7 @@ const CLINICS: ClinicSpec[] = [
       specialist: SPECIALIST,
       contactName: "Luis Romero",
       contactRole: "Group Operations Lead",
-      stage: "Kickoff",
+      stage: "Configuration",
       kickoffDaysAgo: 3,
       goLiveInDays: 26,
     },
@@ -103,7 +103,7 @@ const CLINICS: ClinicSpec[] = [
       specialist: SPECIALIST,
       contactName: "Rachel Moore",
       contactRole: "Clinic Owner, DVM",
-      stage: "Go-live ready",
+      stage: "Go-live",
       kickoffDaysAgo: 24,
       goLiveInDays: 3,
     },
@@ -126,7 +126,7 @@ const CLINICS: ClinicSpec[] = [
       specialist: SPECIALIST,
       contactName: "Paul Nguyen",
       contactRole: "Practice Manager",
-      stage: "Live",
+      stage: "Hypercare",
       kickoffDaysAgo: 52,
       goLiveInDays: -21,
     },

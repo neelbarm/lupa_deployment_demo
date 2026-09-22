@@ -5,7 +5,7 @@ import { moduleScore, QUIZ_GATE, quizScore, simScore } from "../../logic/scoring
 import { Link, useNav } from "../../router";
 import { actions, useAppState } from "../../store";
 import type { Stage, TrainingModule } from "../../types";
-import { Icon } from "../icons";
+import { CategoryTile, Icon } from "../icons";
 import { Confetti, CountUp } from "../primitives";
 import { Simulator, type SimResult } from "./Simulator";
 
@@ -119,6 +119,7 @@ export function ModulePlayer({ staffId, moduleId, preview, backTo }: Props) {
           <Icon name="back" size={16} /> {preview ? "Module library" : "My training"}
         </Link>
         <div className="player-title">
+          <CategoryTile category={module.category} />
           <span className="eyebrow">
             {module.category} · ~{module.minutes} min · pass mark {module.passScore}%{preview ? " · Preview (not recorded)" : ""}
           </span>
