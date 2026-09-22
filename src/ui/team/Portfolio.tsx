@@ -152,7 +152,9 @@ export function Portfolio() {
                     </span>
                     <div className="fine">
                       {stuck
-                        ? `Failed “${MODULE_MAP[stuck.moduleId].title}” ${stuck.failedAttempts}×`
+                        ? stuck.recert
+                          ? `Recertification required on “${MODULE_MAP[stuck.moduleId].title}”`
+                          : `Failed “${MODULE_MAP[stuck.moduleId].title}” ${stuck.failedAttempts}×`
                         : s.certified === 0
                           ? `Hasn't started · last active ${relTime(s.staff.lastActiveAt)}`
                           : `${s.readiness}% ready · last active ${relTime(s.staff.lastActiveAt)}`}

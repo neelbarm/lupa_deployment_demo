@@ -1,4 +1,5 @@
 import { MODULES } from "../content/modules";
+import { SPECIALIST } from "../data/seed";
 import { Link } from "../router";
 import { STAGES } from "../types";
 import { Icon, LupaWordmark } from "./icons";
@@ -32,6 +33,7 @@ export function Landing() {
         </header>
 
         <div className="hero-inner">
+          <span className="hero-note">Independent concept demo · not affiliated with Lupa</span>
           <h1>Every person ready on go-live day.</h1>
           <p>Clinic staff learn Lupa from the workflows they already know. Lupa's deployment team sees who's ready, live.</p>
           <div className="hero-ctas">
@@ -111,7 +113,10 @@ export function Landing() {
         </div>
       </section>
 
-      <footer className="landing-foot fine">Demo data lives in your browser. Reset anytime from the console.</footer>
+      <footer className="landing-foot fine">
+        An independent concept by {SPECIALIST}, not affiliated with or endorsed by Lupa. All clinics and people are fictional. Data stays in
+        your browser.
+      </footer>
     </div>
   );
 }

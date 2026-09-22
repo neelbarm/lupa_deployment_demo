@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { fillPims, MODULE_MAP } from "../../content/modules";
-import { moduleStatuses } from "../../logic/metrics";
+import { isCertified, moduleStatuses } from "../../logic/metrics";
 import { moduleScore, QUIZ_GATE, quizScore, simScore } from "../../logic/scoring";
 import { Link, useNav } from "../../router";
 import { actions, useAppState } from "../../store";
@@ -35,22 +35,35 @@ export function ModulePlayer({ staffId, moduleId, preview, backTo }: Props) {
   const statuses = staff ? moduleStatuses(state, staff) : [];
   const myStatus = statuses.find((m) => m.moduleId === moduleId);
 
-  const [stage, setStageLocal] = useState<Stage>("compare");
+  const record = !preview && !!staff;
+  // Resume where the learner left off. Quiz and simulation answers aren't saved, so those restart at the quiz.
+  const [stage, setStageLocal] = useState<Stage>(() => {
+    const saved = record ? state.progress.find((p) => p.staffId === staff!.id && p.moduleId === moduleId) : undefined;
+    if (!saved) return "compare";
+    return saved.stage === "sim" || saved.stage === "result" ? "quiz" : saved.stage;
+  });
   const [quizRes, setQuizRes] = useState<{ score: number; misses: string[] } | null>(null);
   const [simRes, setSimRes] = useState<SimResult | null>(null);
+  const [lastMistakes, setLastMistakes] = useState<SimResult["mistakes"]>();
   const [runKey, setRunKey] = useState(0);
-
-  const record = !preview && !!staff;
+  // Was this module already certified when this run started? (Then a run is practice.)
+  const [wasCertified, setWasCertified] = useState(() => !!myStatus && isCertified(myStatus));
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (record) actions.startModule(staff!.id, moduleId);
+    if (record) actions.startModule(staff!.id, moduleId, runKey === 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moduleId, runKey]);
+
+  useEffect(() => {
+    // Bring the simulated Lupa into view (it sits below the brief on narrow screens).
+    if (stage === "sim") requestAnimationFrame(() => rootRef.current?.querySelector(".sim")?.scrollIntoView({ block: "start", behavior: "smooth" }));
+  }, [stage]);
 
   function setStage(s: Stage) {
     setStageLocal(s);
     if (record && s !== "result") actions.setStage(staff!.id, moduleId, s);
-    document.querySelector(".player")?.scrollIntoView({ block: "start", behavior: "smooth" });
+    if (s !== "sim") rootRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
   }
 
   if (!module) return <div className="page">Module not found.</div>;
@@ -104,6 +117,8 @@ export function ModulePlayer({ staffId, moduleId, preview, backTo }: Props) {
   }
 
   function retake() {
+    setLastMistakes(simRes?.mistakes);
+    setWasCertified(!!myStatus && isCertified(myStatus));
     setQuizRes(null);
     setSimRes(null);
     setRunKey((k) => k + 1);
@@ -113,7 +128,7 @@ export function ModulePlayer({ staffId, moduleId, preview, backTo }: Props) {
   const current = STAGES.findIndex((s) => s.key === stage);
 
   return (
-    <div className="player">
+    <div className="player" ref={rootRef}>
       <header className="player-head">
         <Link to={backTo} className="back-link">
           <Icon name="back" size={16} /> {preview ? "Module library" : "My training"}
@@ -136,7 +151,7 @@ export function ModulePlayer({ staffId, moduleId, preview, backTo }: Props) {
       </header>
 
       {stage === "compare" && <Compare module={module} pims={pims} onNext={() => setStage("lesson")} />}
-      {stage === "lesson" && <Lesson module={module} pims={pims} onNext={() => setStage("quiz")} reviewMistakes={simRes?.mistakes} />}
+      {stage === "lesson" && <Lesson module={module} pims={pims} onNext={() => setStage("quiz")} reviewMistakes={lastMistakes} />}
       {stage === "quiz" && (
         <Quiz
           key={runKey}
@@ -170,6 +185,9 @@ export function ModulePlayer({ staffId, moduleId, preview, backTo }: Props) {
           final={finalScore}
           passed={passed}
           preview={preview}
+          practice={wasCertified}
+          pathDone={!preview && statuses.length > 0 && statuses.every(isCertified)}
+          hasNext={!!nextId}
           onRetake={retake}
           onNext={nextId && passed && !preview ? () => go(`/learn/${staff!.id}/m/${nextId}`) : undefined}
           onBack={() => go(backTo)}
@@ -382,6 +400,9 @@ function Result({
   final,
   passed,
   preview,
+  practice,
+  pathDone,
+  hasNext,
   onRetake,
   onNext,
   onBack,
@@ -392,6 +413,9 @@ function Result({
   final: number;
   passed: boolean;
   preview?: boolean;
+  practice: boolean;
+  pathDone: boolean;
+  hasNext: boolean;
   onRetake: () => void;
   onNext?: () => void;
   onBack: () => void;
@@ -405,18 +429,32 @@ function Result({
         <div className="result-score">
           <span className="eyebrow">{passed ? "Certified" : "Not yet"}</span>
           <strong className="num">
-            <CountUp value={final} suffix="%" />
+            <CountUp value={final} suffix="%" fromZero />
           </strong>
           <span className="fine">pass mark {module.passScore}%</span>
         </div>
         <div className="result-copy">
-          <h2>{passed ? `You're certified on ${module.title}.` : "Almost. This one needs a retake."}</h2>
-          <p>
+          <h2>
             {passed
-              ? preview
-                ? "Preview only: nothing was recorded."
-                : "Your deployment team at Lupa can see this now. The next module is unlocked."
-              : `You need ${module.passScore}% to move on. Review the steps below, then retake. Only your best attempt counts toward certification.`}
+              ? practice
+                ? "Nice practice run."
+                : `You're certified on ${module.title}.`
+              : practice
+                ? "Practice run: not quite this time."
+                : "Almost. This one needs a retake."}
+          </h2>
+          <p>
+            {preview
+              ? "Preview only: nothing was recorded."
+              : practice
+                ? "Your certification is unaffected. Only your best attempt counts."
+                : passed
+                  ? pathDone
+                    ? "That completes your learning path: you're go-live ready. Your deployment team at Lupa can see this now."
+                    : hasNext
+                      ? "Your deployment team at Lupa can see this now. The next module is unlocked."
+                      : "Your deployment team at Lupa can see this now."
+                  : `You need ${module.passScore}% to move on. Review the steps below, then retake. Only your best attempt counts toward certification.`}
           </p>
           <dl className="result-break">
             <div>

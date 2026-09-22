@@ -136,11 +136,10 @@ export function Simulator({ module, clinicName, onError, onStep, onComplete }: P
           </div>
         )}
 
-        {feedback && (
-          <div className={`sim-feedback ${feedback.tone === "good" ? "is-good" : "is-bad"}`} role="status">
-            {feedback.text}
-          </div>
-        )}
+        {/* Always rendered so the first message doesn't push the simulated app down. */}
+        <div className="sim-feedback-slot" role="status" aria-live="polite">
+          {feedback && <div className={`sim-feedback ${feedback.tone === "good" ? "is-good" : "is-bad"}`}>{feedback.text}</div>}
+        </div>
 
         <div className="sim-scoreline">
           <div>

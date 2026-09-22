@@ -131,12 +131,12 @@ const CLINICS: ClinicSpec[] = [
       goLiveInDays: -21,
     },
     staff: [
-      { name: "Dr. Helen Park", role: "vet", done: 5, skill: 0.9, lastActiveDays: 12 },
-      { name: "Dr. Marco Silva", role: "vet", done: 5, skill: 0.75, retries: { scribe: 1 }, lastActiveDays: 15 },
-      { name: "Kara Jensen", role: "tech", done: 5, skill: 0.8, lastActiveDays: 14 },
-      { name: "Eli Brooks", role: "frontdesk", done: 5, skill: 0.85, lastActiveDays: 13 },
-      { name: "Sofia Ramos", role: "frontdesk", done: 5, skill: 0.7, retries: { checkout: 1 }, lastActiveDays: 16 },
-      { name: "Paul Nguyen", role: "manager", done: 6, skill: 0.9, lastActiveDays: 11 },
+      { name: "Dr. Helen Park", role: "vet", done: 5, skill: 0.9, lastActiveDays: 25 },
+      { name: "Dr. Marco Silva", role: "vet", done: 5, skill: 0.75, retries: { scribe: 1 }, lastActiveDays: 27 },
+      { name: "Kara Jensen", role: "tech", done: 5, skill: 0.8, lastActiveDays: 26 },
+      { name: "Eli Brooks", role: "frontdesk", done: 5, skill: 0.85, lastActiveDays: 24 },
+      { name: "Sofia Ramos", role: "frontdesk", done: 5, skill: 0.7, retries: { checkout: 1 }, lastActiveDays: 29 },
+      { name: "Paul Nguyen", role: "manager", done: 6, skill: 0.9, lastActiveDays: 28 },
     ],
   },
 ];
@@ -230,6 +230,7 @@ export function createSeed(now = Date.now()): AppState {
     notes: [],
     reminders: [],
     benchmarks: [],
+    clockAt: now,
   };
   const ev = (e: Omit<ActivityEvent, "id">) => state.events.push({ ...e, id: `e${state.events.length}-${e.ts}` });
 
@@ -321,7 +322,7 @@ export function createSeed(now = Date.now()): AppState {
   note({ clinicId: "harbor", ts: now - 20 * DAY, author: SPECIALIST, kind: "call", text: "Go-live day hypercare call. No blockers. Moving to 30-day check-in cadence." });
 
   const rem = (x: Omit<Reminder, "id">) => state.reminders.push({ ...x, id: `r${state.reminders.length}` });
-  rem({ clinicId: "riverside", staffId: "riverside-tom.becker", ts: now - 3 * DAY, from: SPECIALIST, message: "Hi Tom! You're 1/5 through your Lupa training. Next up is Tasks & Treatment Board (~7 min). Go-live is close!", moduleId: "tasks" });
+  rem({ clinicId: "riverside", staffId: "riverside-tom.becker", ts: now - 3 * DAY, from: SPECIALIST, message: "Hi Tom! You're 1/5 through your Lupa training. Next up is Patient Intake & Vitals (~8 min). Go-live is close!", moduleId: "intake" });
   rem({ clinicId: "riverside", staffId: "riverside-raj.patel", ts: now - 0.8 * DAY, from: SPECIALIST, message: "Hi Dr. Patel, the AI Scribe retake is ready. Tip: always review the Plan section before signing. Happy to do a 10-min 1:1.", moduleId: "scribe", readAt: now - 0.5 * DAY });
   for (const r0 of state.reminders)
     ev({ ts: r0.ts, clinicId: r0.clinicId, staffId: r0.staffId, type: "reminder", text: `Reminder sent to ${state.staff.find((s) => s.id === r0.staffId)!.name}` });

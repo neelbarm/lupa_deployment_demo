@@ -3,7 +3,7 @@ import { MODULE_MAP } from "../../content/modules";
 import { DAY, fmtDate, isCertified, relTime, summarizeClinic, summarizeStaff } from "../../logic/metrics";
 import { Link, useNav } from "../../router";
 import { actions, greetingName, useAppState } from "../../store";
-import { isLive, ROLE_LABELS, ROLES } from "../../types";
+import { ROLE_LABELS, ROLES } from "../../types";
 import { CategoryTile, Icon, LupaWordmark } from "../icons";
 import { ThemeToggle } from "../ThemeToggle";
 import { Avatar, Meter, ProficiencyPill, Ring, useTick } from "../primitives";
@@ -22,13 +22,11 @@ export function LearnLogin() {
         <p className="lede">In production, staff sign in from their invite email. Here, pick anyone.</p>
       </header>
       <div className="seg" role="tablist">
-        {state.clinics
-          .filter((c) => !isLive(c.stage))
-          .map((c) => (
-            <button key={c.id} role="tab" aria-selected={c.id === clinicId} className={c.id === clinicId ? "is-on" : ""} onClick={() => setClinicId(c.id)}>
-              {c.name}
-            </button>
-          ))}
+        {state.clinics.map((c) => (
+          <button key={c.id} role="tab" aria-selected={c.id === clinicId} className={c.id === clinicId ? "is-on" : ""} onClick={() => setClinicId(c.id)}>
+            {c.name}
+          </button>
+        ))}
       </div>
       <p className="fine">
         Switching from <strong>{clinic.legacyPims}</strong> · go-live {new Date(clinic.goLiveDate).toLocaleDateString(undefined, { month: "long", day: "numeric" })}
@@ -164,7 +162,7 @@ export function LearnerHome({ staffId }: { staffId: string }) {
                     <strong>{mod.title}</strong>
                     {extra && <span className="pill pill-info">Assigned by Lupa</span>}
                     {m.overdue && <span className="pill pill-crit">Overdue</span>}
-                    {m.proficiency !== "not_started" && <ProficiencyPill p={m.proficiency} />}
+                    {m.proficiency !== "not_started" && <ProficiencyPill p={m.proficiency} recert={m.recert} />}
                   </div>
                   <span className="fine">
                     ~{mod.minutes} min · pass mark {mod.passScore}%
@@ -245,10 +243,18 @@ export function LearnerShell({ staffId, children }: { staffId?: string; children
                 <Icon name="bell" size={18} />
                 {unread > 0 && <b>{unread}</b>}
               </button>
-              <button className="chrome-me chrome-user" onClick={() => go("/learn")} title="Switch user">
-                <Avatar name={staff.name} size={30} />
-                <span className="who-name">{staff.name}</span>
-              </button>
+              {embedded ? (
+                // In Presenter mode the learner is chosen from the picker above both panes.
+                <span className="chrome-me chrome-user is-static">
+                  <Avatar name={staff.name} size={30} />
+                  <span className="who-name">{staff.name}</span>
+                </span>
+              ) : (
+                <button className="chrome-me chrome-user" onClick={() => go("/learn")} title="Switch user">
+                  <Avatar name={staff.name} size={30} />
+                  <span className="who-name">{staff.name}</span>
+                </button>
+              )}
             </>
           )}
           {!embedded && (

@@ -41,8 +41,8 @@ export function AppRoutes() {
     else if ((m = match("/team/library/:mid", path))) page = <LibraryModule moduleId={m.mid} />;
     else if (match("/team/library", path)) page = <Library />;
     else if ((m = match("/team/clinic/:cid/staff/:sid", path))) page = <StaffProfile key={m.sid} clinicId={m.cid} staffId={m.sid} />;
-    else if ((m = match("/team/clinic/:cid/:tab", path))) page = <ClinicWorkspace clinicId={m.cid} tab={m.tab} />;
-    else if ((m = match("/team/clinic/:cid", path))) page = <ClinicWorkspace clinicId={m.cid} />;
+    else if ((m = match("/team/clinic/:cid/:tab", path))) page = <ClinicWorkspace key={m.cid} clinicId={m.cid} tab={m.tab} />;
+    else if ((m = match("/team/clinic/:cid", path))) page = <ClinicWorkspace key={m.cid} clinicId={m.cid} />;
     return <ConsoleShell>{page}</ConsoleShell>;
   }
 

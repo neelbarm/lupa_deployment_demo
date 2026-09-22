@@ -15,6 +15,8 @@
   --accent-ink: #5b21b6;
   --accent-soft: #f1eafe;
   --on-accent: #ffffff;
+  --on-good: #ffffff;
+  --on-crit: #ffffff;
 
   --good: #16a34a;
   --good-soft: #e5f6eb;
@@ -74,6 +76,8 @@
     --accent-ink: #c4b5fd;
     --accent-soft: #2a1d4a;
     --on-accent: #140a2a;
+    --on-good: #052e16;
+    --on-crit: #2a0707;
     --good: #4ade80;
     --good-soft: #10301d;
     --warn: #fbbf24;
@@ -116,6 +120,8 @@
   --accent-ink: #c4b5fd;
   --accent-soft: #2a1d4a;
   --on-accent: #140a2a;
+  --on-good: #052e16;
+  --on-crit: #2a0707;
   --good: #4ade80;
   --good-soft: #10301d;
   --warn: #fbbf24;
@@ -290,7 +296,7 @@ textarea {
 }
 .btn-danger {
   background: var(--crit);
-  color: #fff;
+  color: var(--on-crit);
 }
 .btn-live {
   background: var(--warn-soft);
@@ -1010,7 +1016,7 @@ textarea {
 }
 .tile-violet {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 .tile-mint {
   background: var(--mint-soft);
@@ -1067,12 +1073,12 @@ textarea {
 .phase-cards li.is-hero {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   transform: translateY(-8px);
   box-shadow: var(--shadow-lg);
 }
 .phase-cards li.is-hero p {
-  color: rgba(255, 255, 255, 0.85);
+  color: color-mix(in srgb, var(--on-accent) 86%, transparent);
 }
 .phase-cards li.is-hero .pill-accent {
   background: var(--mint);
@@ -1095,8 +1101,8 @@ textarea {
   color: var(--accent-ink);
 }
 .is-hero .phase-num {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  background: color-mix(in srgb, var(--on-accent) 20%, transparent);
+  color: var(--on-accent);
 }
 .pill-accent {
   background: var(--accent-soft);
@@ -1301,7 +1307,7 @@ textarea {
 }
 .chrome-nav a.is-active {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 .chrome-right {
   display: flex;
@@ -1543,12 +1549,12 @@ textarea {
 .phases li.is-current {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   box-shadow: 0 8px 20px -10px var(--accent);
 }
 .phases li.is-current .phase-dot {
-  background: rgba(255, 255, 255, 0.22);
-  color: #fff;
+  background: color-mix(in srgb, var(--on-accent) 22%, transparent);
+  color: var(--on-accent);
 }
 .tab-badge {
   display: inline-grid;
@@ -1558,7 +1564,7 @@ textarea {
   padding: 0 5px;
   border-radius: 999px;
   background: var(--crit);
-  color: #fff;
+  color: var(--on-crit);
   font-size: 0.7rem;
 }
 
@@ -1879,7 +1885,7 @@ textarea {
 }
 .cell-mastered {
   background: var(--good);
-  color: #fff;
+  color: var(--on-good);
 }
 .cell-proficient {
   background: color-mix(in srgb, var(--good) 40%, var(--surface));
@@ -1887,7 +1893,7 @@ textarea {
 }
 .cell-retrain {
   background: var(--crit);
-  color: #fff;
+  color: var(--on-crit);
 }
 .cell-in_progress {
   background: var(--info-soft);
@@ -2323,7 +2329,7 @@ textarea {
 }
 .is-cert .path-node {
   background: var(--good);
-  color: #fff;
+  color: var(--on-good);
 }
 .is-next .path-node {
   background: var(--accent);
@@ -2898,7 +2904,7 @@ textarea {
 .lupa-nav {
   flex: 1;
   display: flex;
-  justify-content: center;
+  justify-content: safe center;
   gap: 2px;
   min-width: 0;
   overflow-x: auto;
@@ -2924,7 +2930,7 @@ textarea {
 }
 .lupa-nav-item.is-active {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 .lupa-tools {
   display: inline-flex;
@@ -3459,6 +3465,58 @@ button.lupa-tr:hover:not(:disabled) {
 }
 
 /* ==========================================================================
+   Concept-demo label
+   ========================================================================== */
+.demo-badge {
+  position: fixed;
+  left: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px 5px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(8px);
+  color: var(--ink-2);
+  font: 600 0.74rem/1.2 var(--f-body);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  opacity: 0.9;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+.demo-badge:hover {
+  opacity: 1;
+  border-color: var(--accent);
+  color: var(--ink);
+}
+.about {
+  display: grid;
+  gap: 12px;
+  color: var(--ink-2);
+}
+.about ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+}
+.about svg {
+  vertical-align: -2px;
+}
+.hero-note {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* ==========================================================================
    Motion
    ========================================================================== */
 .page,
@@ -3542,5 +3600,95 @@ button.lupa-tr:hover:not(:disabled) {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   Polish from the live-demo audit
+   ========================================================================== */
+/* Hints on table rows draw inside the row so the table's overflow can't clip them. */
+.lupa-tr.is-hint {
+  outline-offset: -3px;
+  background: var(--warn-soft);
+}
+/* Keyboard focus stays visible on violet surfaces. */
+.hero-band :focus-visible,
+.learner-hero :focus-visible,
+.phase-cards .is-hero :focus-visible {
+  outline-color: #fff;
+}
+.field.inline:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.sim-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--r);
+  background: var(--warn-soft);
+  color: var(--ink);
+  font-size: 0.88rem;
+}
+.sim-banner .live-dot {
+  background: var(--warn);
+}
+.chrome-user.is-static {
+  cursor: default;
+}
+.chrome-user.is-static:hover {
+  background: none;
+}
+.sim-feedback-slot:empty {
+  display: none;
+}
+/* Presenter's console pane (and other narrow consoles): nav gets its own row before it can overlap. */
+@container app (max-width: 740px) {
+  .console .chrome {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .console .chrome-nav {
+    order: 5;
+    flex-basis: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+}
+/* Stacked simulation (Presenter pane, small laptops): keep the brief short so the simulated Lupa stays in view. */
+@container app (max-width: 1100px) {
+  .sim-steps,
+  .sim-brief > .fine {
+    display: none;
+  }
+  .sim-brief {
+    gap: 10px;
+    padding: 14px 16px;
+  }
+  .sim-feedback-slot,
+  .sim-feedback-slot:empty {
+    display: block;
+    min-height: 42px;
+  }
+  .sim-scoreline {
+    padding-top: 8px;
+  }
+  .sim-scoreline strong {
+    font-size: 1.15rem;
+  }
+  .lupa-nav {
+    scrollbar-width: thin;
+  }
+  .lupa-nav-item {
+    flex: none;
+    min-width: 0;
+    padding: 6px 5px;
+    font-size: 0.6rem;
+  }
+}
+@media (max-width: 720px) {
+  .demo-badge {
+    display: none;
   }
 }

@@ -145,6 +145,8 @@ export interface Staff {
   lastActiveAt?: number;
   /** Modules added by the deployment team on top of the role path. */
   extraModules: string[];
+  /** When each extra module was assigned (drives its due date). */
+  extraAssignedAt?: Record<string, number>;
 }
 
 export interface Attempt {
@@ -164,6 +166,7 @@ export interface Attempt {
   quizMisses: string[];
   /** Set when the deployment team requires recertification. */
   superseded?: boolean;
+  supersededAt?: number;
 }
 
 export type Stage = "compare" | "lesson" | "quiz" | "sim" | "result";
@@ -176,6 +179,8 @@ export interface InProgress {
   updatedAt: number;
   simStep?: number;
   simErrors?: number;
+  /** Created by "Simulate activity", not by a real learner. */
+  simulated?: boolean;
 }
 
 export type EventType =
@@ -249,4 +254,6 @@ export interface AppState {
   notes: Note[];
   reminders: Reminder[];
   benchmarks: Benchmark[];
+  /** Last time this state was saved; used to keep demo dates fresh for returning visitors. */
+  clockAt?: number;
 }

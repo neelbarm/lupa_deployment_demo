@@ -86,7 +86,7 @@ export const MODULES: TrainingModule[] = [
         {
           id: "home",
           nav: "home",
-          title: "Good morning, Riverside",
+          title: "Good morning",
           subtitle: "Tuesday · 24 appointments · 3 unread messages",
           sections: [
             { title: "Today", layout: "row", items: [kv([["Appointments", "24"], ["Checked in", "6"], ["Awaiting payment", "2"]])] },

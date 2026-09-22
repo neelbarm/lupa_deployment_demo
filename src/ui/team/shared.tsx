@@ -2,7 +2,7 @@ import { useState } from "react";
 import { MODULE_MAP } from "../../content/modules";
 import { relTime, summarizeStaff } from "../../logic/metrics";
 import { actions, greetingName, KIND_LABEL, useAppState } from "../../store";
-import type { ActivityEvent, EventType, NoteKind, Staff } from "../../types";
+import type { ActivityEvent, EventType, NoteKind } from "../../types";
 import { Icon, type IconName } from "../icons";
 import { Avatar, Modal, toast, useTick } from "../primitives";
 import { useNav } from "../../router";
@@ -56,52 +56,70 @@ export function Feed({ events, limit = 30, showClinic }: { events: ActivityEvent
   );
 }
 
-export const TEMPLATES: { id: string; label: string; text: (s: Staff, moduleTitle?: string, days?: number) => string }[] = [
+/**
+ * Reminder templates. {name}, {module} (next module), {retake} (module to retake) and {days}
+ * (days to go-live) are filled in for each recipient when the reminder is sent.
+ */
+export const TEMPLATES: { id: string; label: string; text: string }[] = [
   {
     id: "next",
     label: "Next module nudge",
-    text: (_s, m) => `Hi {name}! Your next Lupa module is “${m ?? "ready"}”. It takes about 10 minutes. Could you fit it in today?`,
+    text: "Hi {name}! Your next Lupa module is “{module}”. It takes about 10 minutes. Could you fit it in today?",
   },
   {
     id: "start",
     label: "Get started",
-    text: () => `Hi {name}, welcome to Lupa Academy! Your first module (Lupa Fundamentals & Jerry) takes ~8 minutes. Start whenever you have a gap between appointments.`,
+    text: "Hi {name}, welcome to Lupa Academy! Your first module ({module}) takes ~8 minutes. Start whenever you have a gap between appointments.",
   },
   {
     id: "retake",
     label: "Retake needed",
-    text: (_s, m) => `Hi {name}, nearly there on “${m ?? "your module"}”. Review the flagged steps and retake when you're ready. Happy to jump on a quick 1:1 if helpful.`,
+    text: "Hi {name}, nearly there on “{retake}”. Review the flagged steps and retake when you're ready. Happy to jump on a quick 1:1 if helpful.",
   },
   {
     id: "golive",
     label: "Go-live countdown",
-    text: (_s, _m, d) => `Hi {name}, go-live is in ${d ?? "a few"} days! Please finish your remaining Lupa modules so you're confident on day one.`,
+    text: "Hi {name}, go-live is in {days} days! Please finish your remaining Lupa modules so you're confident on day one.",
   },
-  { id: "custom", label: "Custom message", text: () => "" },
+  { id: "custom", label: "Custom message", text: "" },
 ];
 
-export function ReminderModal({ staffIds, onClose }: { staffIds: string[]; onClose: () => void }) {
+export function ReminderModal({ staffIds, onClose, onSent }: { staffIds: string[]; onClose: () => void; onSent?: () => void }) {
   const state = useAppState();
   const people = staffIds.map((id) => state.staff.find((s) => s.id === id)!).filter(Boolean);
   const first = people[0];
-  const sum = first ? summarizeStaff(state, first) : undefined;
-  const clinic = first ? state.clinics.find((c) => c.id === first.clinicId) : undefined;
-  const days = clinic ? Math.max(0, Math.ceil((clinic.goLiveDate - Date.now()) / 86_400_000)) : undefined;
-  const defaultTpl = sum && sum.certified === 0 && sum.modules.every((m) => m.attempts === 0) ? "start" : sum?.modules.some((m) => m.proficiency === "retrain") ? "retake" : "next";
+  const single = people.length === 1;
+  const sums = people.map((p) => summarizeStaff(state, p));
+  const noneStarted = sums.every((x) => x.modules.every((m) => m.attempts === 0 && m.proficiency === "not_started"));
+  const anyRetake = sums.some((x) => x.modules.some((m) => m.proficiency === "retrain"));
+  const templates = TEMPLATES.filter((t) => t.id !== "start" || noneStarted);
+  const defaultTpl = noneStarted ? "start" : single && anyRetake ? "retake" : "next";
+
+  // One recipient: preview the exact message. Several: keep placeholders, filled in per person.
+  function preview(template: string) {
+    if (!single) return template;
+    const sum = sums[0];
+    const retake = sum.modules.find((m) => m.proficiency === "retrain")?.moduleId ?? sum.nextModule;
+    const clinic = state.clinics.find((c) => c.id === first.clinicId)!;
+    const days = Math.max(0, Math.ceil((clinic.goLiveDate - Date.now()) / 86_400_000));
+    return template
+      .replaceAll("{module}", sum.nextModule ? MODULE_MAP[sum.nextModule].title : "your remaining modules")
+      .replaceAll("{retake}", retake ? MODULE_MAP[retake].title : "your module")
+      .replaceAll("{days}", String(days));
+  }
+
   const [tpl, setTpl] = useState(defaultTpl);
-  const modTitle = sum?.nextModule ? MODULE_MAP[sum.nextModule].title : undefined;
-  const [text, setText] = useState(TEMPLATES.find((t) => t.id === defaultTpl)!.text(first, modTitle, days));
+  const [text, setText] = useState(() => preview(TEMPLATES.find((t) => t.id === defaultTpl)!.text));
 
   function pick(id: string) {
     setTpl(id);
-    const t = TEMPLATES.find((x) => x.id === id)!;
-    setText(t.text(first, modTitle, days));
+    setText(preview(TEMPLATES.find((x) => x.id === id)!.text));
   }
 
   function send() {
-    const moduleId = people.length === 1 ? sum?.nextModule : undefined;
-    actions.sendReminder(staffIds, text, moduleId);
-    toast(`Reminder sent to ${people.length === 1 ? people[0].name : `${people.length} people`}`, "good");
+    actions.sendReminder(staffIds, text);
+    toast(`Reminder sent to ${single ? first.name : `${people.length} people`}`, "good");
+    onSent?.();
     onClose();
   }
 
@@ -119,7 +137,7 @@ export function ReminderModal({ staffIds, onClose }: { staffIds: string[]; onClo
         <label className="field">
           <span>Template</span>
           <select id="reminder-template" value={tpl} onChange={(e) => pick(e.target.value)}>
-            {TEMPLATES.map((t) => (
+            {templates.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.label}
               </option>
@@ -131,8 +149,10 @@ export function ReminderModal({ staffIds, onClose }: { staffIds: string[]; onClo
           <textarea id="reminder-text" rows={4} value={text} onChange={(e) => setText(e.target.value)} />
         </label>
         <p className="fine">
-          {"{name}"} becomes each person's name ({first ? greetingName(first.name) : "…"}). Delivered in-app on their Lupa Academy home, and
-          by email in production. You'll see when it's read.
+          {single
+            ? `{name} becomes ${greetingName(first.name)}.`
+            : "{name}, {module}, {retake} and {days} are filled in for each person, so everyone sees their own next step."}{" "}
+          Delivered on their Lupa Academy home (and by email in production). You'll see when it's read.
         </p>
         <div className="form-actions">
           <button className="btn btn-quiet" onClick={onClose}>

@@ -39,7 +39,8 @@ const PROF_TONE: Record<Proficiency, string> = {
   not_started: "mute",
 };
 
-export function ProficiencyPill({ p }: { p: Proficiency }) {
+export function ProficiencyPill({ p, recert }: { p: Proficiency; recert?: boolean }) {
+  if (recert) return <span className="pill pill-warn">Recertification required</span>;
   return <span className={`pill pill-${PROF_TONE[p]}`}>{PROFICIENCY_LABEL[p]}</span>;
 }
 
@@ -56,11 +57,8 @@ export function BenchPill({ state }: { state: BenchmarkState }) {
 }
 
 export function Meter({ value: target, tone, marker }: { value: number; tone?: string; marker?: number }) {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setValue(target));
-    return () => cancelAnimationFrame(id);
-  }, [target]);
+  // Render at the real value; the CSS width transition animates later live changes.
+  const value = target;
   const t = tone ?? (target >= 90 ? "good" : target >= 35 ? "info" : target >= 15 ? "warn" : "crit");
   return (
     <span className="meter" role="meter" aria-valuenow={target} aria-valuemin={0} aria-valuemax={100}>
@@ -70,11 +68,21 @@ export function Meter({ value: target, tone, marker }: { value: number; tone?: s
   );
 }
 
-/** Animate a number toward `value` whenever it changes (e.g. live readiness updates). */
-export function useCountUp(value: number, ms = 700): number {
-  const [shown, setShown] = useState(0);
-  const from = useRef(0);
+const reducedMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+/**
+ * Show `value`, animating from the previous value when it changes (e.g. a live readiness update).
+ * Opens at the real value so nothing appears to "jump" when a page loads; `fromZero` opts into a reveal.
+ */
+export function useCountUp(value: number, ms = 700, fromZero = false): number {
+  const [shown, setShown] = useState(fromZero && !reducedMotion() ? 0 : value);
+  const from = useRef(shown);
   useEffect(() => {
+    if (from.current === value || reducedMotion()) {
+      from.current = value;
+      setShown(value);
+      return;
+    }
     const start = performance.now();
     const a = from.current;
     let raf = 0;
@@ -92,8 +100,8 @@ export function useCountUp(value: number, ms = 700): number {
   return shown;
 }
 
-export function CountUp({ value, suffix = "" }: { value: number; suffix?: string }) {
-  const v = useCountUp(value);
+export function CountUp({ value, suffix = "", fromZero = false }: { value: number; suffix?: string; fromZero?: boolean }) {
+  const v = useCountUp(value, 700, fromZero);
   return (
     <>
       {v}
@@ -108,7 +116,7 @@ export function Ring({ value: target, size = 120, label }: { value: number; size
   const c = 2 * Math.PI * r;
   const tone = target >= 90 ? "good" : target >= 35 ? "info" : target >= 15 ? "warn" : "crit";
   return (
-    <div className="ring" style={{ width: size, height: size }}>
+    <div className="ring" style={{ width: size, height: size }} role="img" aria-label={`${target}%${label ? ` ${label}` : ""}`}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--line)" strokeWidth="9" />
         <circle
