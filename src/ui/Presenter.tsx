@@ -9,22 +9,10 @@ import { ThemeToggle } from "./ThemeToggle";
 
 const DEFAULT_LEARNER = "riverside-jess.morales";
 
-const SCRIPT = [
-  ["The problem", "Riverside goes live in 9 days. Jess (front desk) hasn't started, so the console flags her as at risk."],
-  ["Nudge", "Right: click Remind next to Jess and send it. It lands on her screen instantly."],
-  ["Read receipt", "Left: mark the reminder read. The console records it."],
-  ["Old → new", "Left: start Lupa Fundamentals. Cornerstone workflow vs. the Lupa way, then the lesson."],
-  ["Gated quiz", "Answer the knowledge check. Under 67% means retake, no simulation."],
-  ["Prove it", "In the simulation, open the wrong ‘Biscotti’ record once. Watch the console log the mistake live."],
-  ["Certified", "Finish the workflow. Score posts, next module unlocks, readiness and skill matrix update."],
-  ["Coach", "Right: Insights shows where the clinic struggles. Open Dr. Patel to see his exact mistakes."],
-];
 
 export function Presenter() {
   const state = useAppState();
   const [learner, setLearner] = useState(DEFAULT_LEARNER);
-  const [script, setScript] = useState(true);
-  const [step, setStep] = useState(0);
   const [reset, setReset] = useState(false);
   const staff = state.staff.find((s) => s.id === learner) ?? state.staff[0];
   const clinicId = staff.clinicId;
@@ -62,9 +50,6 @@ export function Presenter() {
         </label>
         <span className="spacer" />
         <ThemeToggle />
-        <button className={`btn btn-sm ${script ? "btn-primary" : "btn-quiet"}`} onClick={() => setScript(!script)}>
-          <Icon name="note" size={14} /> Demo script
-        </button>
         <button className="btn btn-sm btn-quiet" onClick={() => setReset(true)}>
           <Icon name="refresh" size={14} /> Reset
         </button>
@@ -72,23 +57,6 @@ export function Presenter() {
           Exit
         </Link>
       </header>
-
-      {script && (
-        <div className="script" role="region" aria-label="Demo script">
-          <span className="script-count num">
-            {step + 1}/{SCRIPT.length}
-          </span>
-          <div className="script-text" key={step}>
-            <strong>{SCRIPT[step][0]}</strong> {SCRIPT[step][1]}
-          </div>
-          <button className="icon-btn" onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0} aria-label="Previous step">
-            <Icon name="back" size={16} />
-          </button>
-          <button className="icon-btn" onClick={() => setStep(Math.min(SCRIPT.length - 1, step + 1))} disabled={step === SCRIPT.length - 1} aria-label="Next step">
-            <Icon name="arrow" size={16} />
-          </button>
-        </div>
-      )}
 
       <p className="presenter-narrow">Presenter mode is built for a laptop or larger screen. On a phone, the two views are stacked.</p>
       <div className="panes">

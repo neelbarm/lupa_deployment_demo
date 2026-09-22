@@ -3244,40 +3244,6 @@ button.lupa-tr:hover:not(:disabled) {
   padding: 5px 8px;
   max-width: 260px;
 }
-.script {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0 8px 8px;
-  padding: 8px 10px 8px 14px;
-  border-radius: 10px;
-  background: var(--side-2);
-  color: var(--side-muted);
-  font-size: 0.86rem;
-}
-.script-count {
-  font-weight: 700;
-  color: var(--side-accent);
-  flex: none;
-}
-.script-text {
-  flex: 1;
-  min-width: 0;
-  animation: rise 0.25s;
-}
-.script-text strong {
-  color: #fff;
-  margin-right: 4px;
-}
-.script .icon-btn {
-  color: var(--side-ink);
-}
-.script .icon-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-.script .icon-btn:disabled {
-  opacity: 0.3;
-}
 .panes {
   flex: 1;
   min-height: 0;

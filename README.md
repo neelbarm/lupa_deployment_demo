@@ -2,13 +2,13 @@
 
 A clinic onboarding CRM for [Lupa](https://lupapets.com/us/) deployments.
 
-**Live demo:** https://neelbarm.github.io/lupa_deployment_demo/ (start with [Presenter mode](https://neelbarm.github.io/lupa_deployment_demo/#/present))
+**Live demo:** https://lupadeploymentdemo.vercel.app/ (start with [Presenter mode](https://lupadeploymentdemo.vercel.app/#/present))
 
 Deployments fail when clinic staff don't know the new workflow. Lupa Academy fixes the handoff:
 
 - **Clinic-facing: Lupa Academy.** Each staff member gets a learning path for their role (vet, tech, front desk or practice manager). Every module starts from the workflow they know in their old PIMS (Cornerstone, ezyVet, AVImark) and shows the Lupa way. After a short lesson comes a scored knowledge check, then a hands-on simulation of Lupa. The next module stays locked until they pass. Every module has a due date, and overdue work is visible to the learner, their manager and Lupa.
 - **Lupa-facing: Deployment Console.** Readiness by clinic, role and person against the pace needed for go-live. It also has a live activity feed, a skill matrix ("who knows what"), go-live benchmarks, the most-missed workflow steps, per-attempt mistake detail, reminders with read receipts, module assignment, recertification and a touchpoint log.
-- **Presenter mode.** Both views side by side, sharing one live store, with a step-by-step demo script.
+- **Presenter mode.** Both views side by side, sharing one live store.
 
 Clinics move through Lupa's own migration phases: **Scoping → Configuration → Training → Go-live → Hypercare**. Lupa Academy powers the Training phase, and its benchmarks decide when a clinic is ready for go-live. The UI follows lupapets.com: violet and aubergine palette, Satoshi and Geist type, pill buttons, and the product's dark top bar. There's a light/dark/system theme toggle in every header.
 
@@ -23,7 +23,7 @@ npm run build    # static site in dist/
 
 ## Deploy
 
-Every push to `main` is tested, built and published to GitHub Pages by `.github/workflows/pages.yml`.
+Every push to `main` deploys to Vercel (https://lupadeploymentdemo.vercel.app/). It is also tested, built and published to GitHub Pages by `.github/workflows/pages.yml`.
 
 It's a static site with no backend or environment variables.
 
