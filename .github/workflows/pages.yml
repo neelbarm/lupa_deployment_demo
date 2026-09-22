@@ -25,6 +25,8 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: touch dist/.nojekyll
+      # gh-pages holds built files only; stop Vercel from trying to build that branch.
+      - run: echo '{"git":{"deploymentEnabled":false}}' > dist/vercel.json
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
