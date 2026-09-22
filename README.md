@@ -2,6 +2,8 @@
 
 A clinic onboarding CRM for [Lupa](https://lupapets.com/us/) deployments.
 
+**Live demo:** https://neelbarm.github.io/lupa_deployment_demo/ (start with [Presenter mode](https://neelbarm.github.io/lupa_deployment_demo/#/present))
+
 Deployments fail when clinic staff don't know the new workflow. Lupa Academy fixes the handoff:
 
 - **Clinic-facing: Lupa Academy.** Each staff member gets a learning path for their role (vet, tech, front desk or practice manager). Every module starts from the workflow they know in their old PIMS (Cornerstone, ezyVet, AVImark) and shows the Lupa way. After a short lesson comes a scored knowledge check, then a hands-on simulation of Lupa. The next module stays locked until they pass. Every module has a due date, and overdue work is visible to the learner, their manager and Lupa.
@@ -20,6 +22,8 @@ npm run build    # static site in dist/
 ```
 
 ## Deploy
+
+Every push to `main` is tested, built and published to GitHub Pages by `.github/workflows/pages.yml`.
 
 It's a static site with no backend or environment variables.
 
