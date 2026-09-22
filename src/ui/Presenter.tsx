@@ -85,6 +85,7 @@ export function Presenter() {
         </div>
       )}
 
+      <p className="presenter-narrow">Presenter mode is built for a laptop or larger screen. On a phone, the two views are stacked.</p>
       <div className="panes">
         <section className="pane pane-clinic" aria-label="Clinic view">
           <div className="pane-label">

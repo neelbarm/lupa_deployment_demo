@@ -711,6 +711,11 @@ textarea {
   margin: 0 auto;
   width: 100%;
 }
+.page > *,
+.tab-body,
+.player > * {
+  min-width: 0;
+}
 .page.narrow {
   max-width: 820px;
 }
@@ -831,6 +836,7 @@ textarea {
   height: 16px;
 }
 .person {
+  min-width: 180px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1906,6 +1912,10 @@ textarea {
   background: var(--surface);
   border: 1px solid var(--line);
   border-top: 4px solid var(--clinic);
+}
+.learner-hero .btn-lg {
+  white-space: normal;
+  text-align: left;
 }
 .learner-hero-copy {
   display: grid;
@@ -3038,7 +3048,19 @@ button.lupa-tr:hover:not(:disabled) {
     display: none;
   }
   .record-row {
-    grid-template-columns: minmax(0, 1fr) auto 20px;
+    grid-template-columns: minmax(0, 1fr) 20px;
+  }
+  .record-pills {
+    grid-column: 1;
+    grid-row: 2;
+    justify-content: flex-start;
+  }
+  .record-chevron {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .tabs {
+    mask-image: linear-gradient(90deg, #000 85%, transparent);
   }
   .record-score,
   .record-attempts {
@@ -3093,7 +3115,19 @@ button.lupa-tr:hover:not(:disabled) {
     grid-row: 2;
   }
 }
+.presenter-narrow {
+  display: none;
+}
 @media (max-width: 900px) {
+  .presenter-narrow {
+    display: block;
+    margin: 0 8px 8px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--side-2);
+    color: var(--side-ink);
+    font-size: 0.86rem;
+  }
   .presenter {
     height: auto;
     min-height: 100vh;

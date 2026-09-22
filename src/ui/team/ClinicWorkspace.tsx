@@ -596,17 +596,20 @@ function Insights({ state, sum }: { state: AppState; sum: ClinicSummary }) {
             <thead>
               <tr>
                 <th>Module</th>
-                <th>Learners</th>
-                <th>Avg score</th>
-                <th>First-try pass</th>
-                <th>Avg wrong moves</th>
+                <th>Avg</th>
+                <th title="First-try pass rate">1st try</th>
+                <th title="Average wrong moves per attempt">Errors</th>
               </tr>
             </thead>
             <tbody>
               {perModule.map((x) => (
                 <tr key={x.m.id}>
-                  <td>{x.m.title}</td>
-                  <td className="num">{x.people}</td>
+                  <td>
+                    {x.m.title}
+                    <span className="fine block">
+                      {x.people} learner{x.people === 1 ? "" : "s"}
+                    </span>
+                  </td>
                   <td className="num">{x.avg}%</td>
                   <td className="num">
                     <span className={x.firstTry !== null && x.firstTry < 70 ? "text-crit" : ""}>{x.firstTry}%</span>
