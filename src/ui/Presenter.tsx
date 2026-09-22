@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { MemoryRouter, Link } from "../router";
 import { actions, useAppState } from "../store";
-import { isLive, ROLE_SHORT } from "../types";
+import { ROLE_SHORT } from "../types";
 import { AppRoutes } from "./AppRoutes";
 import { Icon } from "./icons";
 import { Modal, toast } from "./primitives";
@@ -14,12 +14,11 @@ export function Presenter() {
   const state = useAppState();
   const [learner, setLearner] = useState(DEFAULT_LEARNER);
   const [reset, setReset] = useState(false);
+  // Bumped on Reset so both panes remount at their starting screens.
+  const [epoch, setEpoch] = useState(0);
   const staff = state.staff.find((s) => s.id === learner) ?? state.staff[0];
   const clinicId = staff.clinicId;
-  const learners = state.staff.filter((s) => {
-    const c = state.clinics.find((x) => x.id === s.clinicId);
-    return c && !isLive(c.stage);
-  });
+  const learners = state.staff;
 
   return (
     <div className="presenter">
@@ -33,9 +32,7 @@ export function Presenter() {
         <label className="presenter-pick">
           <span className="fine">Clinic learner</span>
           <select id="presenter-learner" value={learner} onChange={(e) => setLearner(e.target.value)}>
-            {state.clinics
-              .filter((c) => !isLive(c.stage))
-              .map((c) => (
+            {state.clinics.map((c) => (
                 <optgroup key={c.id} label={c.name}>
                   {learners
                     .filter((s) => s.clinicId === c.id)
@@ -65,7 +62,7 @@ export function Presenter() {
             <span className="door-tag">Clinic-facing</span> What {staff.name} sees
           </div>
           <div className="pane-body app-root">
-            <MemoryRouter initial={`/learn/${learner}`} key={"l" + learner}>
+            <MemoryRouter initial={`/learn/${learner}`} key={`l${learner}${epoch}`}>
               <AppRoutes />
             </MemoryRouter>
           </div>
@@ -75,7 +72,7 @@ export function Presenter() {
             <span className="door-tag door-tag-team">Lupa-facing</span> Deployment Console
           </div>
           <div className="pane-body app-root">
-            <MemoryRouter initial={`/team/clinic/${clinicId}`} key={"t" + clinicId}>
+            <MemoryRouter initial={`/team/clinic/${clinicId}`} key={`t${clinicId}${epoch}`}>
               <AppRoutes />
             </MemoryRouter>
           </div>
@@ -94,6 +91,7 @@ export function Presenter() {
                 actions.resetDemo();
                 setReset(false);
                 setLearner(DEFAULT_LEARNER);
+                setEpoch((n) => n + 1);
                 toast("Demo reset", "good");
               }}
             >

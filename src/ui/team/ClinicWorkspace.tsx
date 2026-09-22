@@ -36,7 +36,8 @@ type Tab = (typeof TABS)[number]["key"];
 export function ClinicWorkspace({ clinicId, tab = "overview" }: { clinicId: string; tab?: string }) {
   const state = useAppState();
   useTick(10_000);
-  const [remind, setRemind] = useState<string[] | null>(null);
+  const [remind, setRemind] = useState<{ ids: string[]; onSent?: () => void } | null>(null);
+  const openRemind = (ids: string[], onSent?: () => void) => ids.length > 0 && setRemind({ ids, onSent });
   const [noteOpen, setNoteOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [simOn, setSimOn] = useState(false);
@@ -52,6 +53,8 @@ export function ClinicWorkspace({ clinicId, tab = "overview" }: { clinicId: stri
 
   if (!clinic || !sum) return <div className="page">Clinic not found.</div>;
   const t = (TABS.find((x) => x.key === tab)?.key ?? "overview") as Tab;
+  const notReady = sum.staff.filter((s) => s.status !== "certified").map((s) => s.staff.id);
+  const days = Math.abs(sum.daysToGoLive);
 
   return (
     <div className="page">
@@ -61,7 +64,9 @@ export function ClinicWorkspace({ clinicId, tab = "overview" }: { clinicId: stri
           <div className="clinic-meta">
             <span>
               <Icon name="calendar" size={15} /> Go-live {fmtDate(clinic.goLiveDate)} ·{" "}
-              <strong>{sum.daysToGoLive > 0 ? `${sum.daysToGoLive} days to go` : sum.daysToGoLive === 0 ? "today" : `live ${-sum.daysToGoLive} days`}</strong>
+              <strong>
+                {sum.daysToGoLive > 0 ? `${days} day${days === 1 ? "" : "s"} to go` : sum.daysToGoLive === 0 ? "today" : `live ${days} day${days === 1 ? "" : "s"}`}
+              </strong>
             </span>
             <span>
               <Icon name="users" size={15} /> {sum.staff.length} staff · {sum.certifiedStaff} ready
@@ -72,9 +77,15 @@ export function ClinicWorkspace({ clinicId, tab = "overview" }: { clinicId: stri
           </div>
         </div>
         <div className="clinic-actions">
-          <button className="btn btn-primary" onClick={() => setRemind(sum.staff.filter((s) => s.status !== "certified").map((s) => s.staff.id))}>
-            <Icon name="send" size={15} /> Remind all not ready
-          </button>
+          {notReady.length > 0 ? (
+            <button className="btn btn-primary" onClick={() => openRemind(notReady)}>
+              <Icon name="send" size={15} /> Remind {notReady.length} not ready
+            </button>
+          ) : (
+            <button className="btn btn-quiet" disabled title="Every staff member is certified">
+              <Icon name="check" size={15} /> Everyone is ready
+            </button>
+          )}
           <button className="btn btn-quiet" onClick={() => setNoteOpen(true)}>
             <Icon name="note" size={15} /> Log touchpoint
           </button>
@@ -85,15 +96,24 @@ export function ClinicWorkspace({ clinicId, tab = "overview" }: { clinicId: stri
             <Icon name="download" size={16} />
           </button>
           <button
-            className={`btn btn-icon ${simOn ? "btn-live" : "btn-quiet"}`}
+            className={`btn ${simOn ? "btn-live" : "btn-quiet btn-icon"}`}
             onClick={() => setSimOn(!simOn)}
-            title={simOn ? "Stop simulated activity" : "Simulate clinic activity (demo)"}
-            aria-label="Simulate clinic activity"
+            title={simOn ? "Stop simulated activity" : "Simulate staff activity (demo): fictional staff start and finish modules on their own"}
+            aria-label={simOn ? "Stop simulated activity" : "Simulate staff activity"}
+            aria-pressed={simOn}
           >
             <Icon name="bolt" size={16} />
+            {simOn && "Simulating · Stop"}
           </button>
         </div>
       </header>
+
+      {simOn && (
+        <p className="sim-banner" role="status">
+          <span className="live-dot" /> Simulated activity is on: fictional staff are starting and finishing modules, so readiness and the feed
+          change on their own. People you're playing as in the clinic view are left alone.
+        </p>
+      )}
 
       <ol className="phases" aria-label="Migration phase">
         {STAGES.map((st, i) => {
@@ -122,15 +142,15 @@ export function ClinicWorkspace({ clinicId, tab = "overview" }: { clinicId: stri
       </nav>
 
       <div className="tab-body" key={t}>
-      {t === "overview" && <Overview sum={sum} state={state} onRemind={setRemind} />}
-      {t === "staff" && <StaffTable sum={sum} onRemind={setRemind} />}
+      {t === "overview" && <Overview sum={sum} state={state} onRemind={openRemind} />}
+      {t === "staff" && <StaffTable sum={sum} onRemind={openRemind} />}
       {t === "matrix" && <SkillMatrix sum={sum} />}
       {t === "benchmarks" && <Benchmarks sum={sum} />}
       {t === "insights" && <Insights state={state} sum={sum} />}
       {t === "touchpoints" && <Touchpoints state={state} clinicId={clinicId} onLog={() => setNoteOpen(true)} />}
       </div>
 
-      {remind && remind.length > 0 && <ReminderModal staffIds={remind} onClose={() => setRemind(null)} />}
+      {remind && <ReminderModal staffIds={remind.ids} onSent={remind.onSent} onClose={() => setRemind(null)} />}
       {noteOpen && <NoteModal clinicId={clinicId} onClose={() => setNoteOpen(false)} />}
       {addOpen && <AddStaffModal clinicId={clinicId} onClose={() => setAddOpen(false)} />}
     </div>
@@ -236,7 +256,9 @@ function Overview({ sum, state, onRemind }: { sum: ClinicSummary; state: AppStat
                     <span className="fine"> · {ROLE_SHORT[s.staff.role]}</span>
                     <div className="fine">
                       {stuck
-                        ? `Stuck on “${MODULE_MAP[stuck.moduleId].title}” (${stuck.failedAttempts} failed)`
+                        ? stuck.recert
+                          ? `Recertification required on “${MODULE_MAP[stuck.moduleId].title}”`
+                          : `Stuck on “${MODULE_MAP[stuck.moduleId].title}” (${stuck.failedAttempts} failed)`
                         : `${s.certified}/${s.total} modules · last active ${relTime(s.staff.lastActiveAt)}`}
                     </div>
                   </div>
@@ -314,9 +336,11 @@ function TrendChart({ state, sum }: { state: AppState; sum: ClinicSummary }) {
         <text x={x(start)} y={H - 8} className="axis">
           Kickoff {fmtDate(start)}
         </text>
-        <text x={Math.min(x(now), W - P.r - 60)} y={H - 8} className="axis">
-          Today
-        </text>
+        {x(now) - x(start) > 110 && (
+          <text x={Math.min(x(now), W - P.r - 60)} y={H - 8} className="axis">
+            Today
+          </text>
+        )}
       </svg>
     </figure>
   );
@@ -324,7 +348,7 @@ function TrendChart({ state, sum }: { state: AppState; sum: ClinicSummary }) {
 
 /* ------------------------------------------------------------------ */
 
-function StaffTable({ sum, onRemind }: { sum: ClinicSummary; onRemind: (ids: string[]) => void }) {
+function StaffTable({ sum, onRemind }: { sum: ClinicSummary; onRemind: (ids: string[], onSent?: () => void) => void }) {
   const [role, setRole] = useState<Role | "all">("all");
   const [status, setStatus] = useState<StaffStatus | "all">("all");
   const [q, setQ] = useState("");
@@ -333,6 +357,8 @@ function StaffTable({ sum, onRemind }: { sum: ClinicSummary; onRemind: (ids: str
   const rows = sum.staff
     .filter((s) => (role === "all" || s.staff.role === role) && (status === "all" || s.status === status) && s.staff.name.toLowerCase().includes(q.toLowerCase()))
     .sort((a, b) => a.readiness - b.readiness);
+  // Only people visible under the current filters are sent to.
+  const selected = rows.filter((r) => sel.has(r.staff.id)).map((r) => r.staff.id);
   const toggle = (id: string) => {
     const n = new Set(sel);
     if (n.has(id)) n.delete(id);
@@ -363,8 +389,8 @@ function StaffTable({ sum, onRemind }: { sum: ClinicSummary; onRemind: (ids: str
           ))}
         </select>
         <span className="spacer" />
-        <button className="btn btn-sm btn-primary" disabled={!sel.size} onClick={() => onRemind([...sel])}>
-          <Icon name="send" size={14} /> Remind {sel.size || ""} selected
+        <button className="btn btn-sm btn-primary" disabled={!selected.length} onClick={() => onRemind(selected, () => setSel(new Set()))}>
+          <Icon name="send" size={14} /> Remind {selected.length || ""} selected
         </button>
       </div>
       <div className="table-wrap">
@@ -495,7 +521,7 @@ function SkillMatrix({ sum }: { sum: ClinicSummary }) {
                             className={`cell cell-${ms.proficiency}`}
                             title={`${s.staff.name} · ${m.title}: ${PROFICIENCY_LABEL[ms.proficiency]}${ms.best ? ` · best ${ms.best.score}%` : ""}${ms.attempts ? ` · ${ms.attempts} attempt(s)` : ""}`}
                           >
-                            {ms.best && isCertified(ms) ? ms.best.score : ms.proficiency === "retrain" ? `${ms.failedAttempts}✕` : ""}
+                            {ms.best && isCertified(ms) ? ms.best.score : ms.recert ? "↻" : ms.proficiency === "retrain" ? `${ms.failedAttempts}✕` : ""}
                           </span>
                         </td>
                       );
@@ -721,7 +747,13 @@ function AddStaffModal({ clinicId, onClose }: { clinicId: string; onClose: () =>
         onSubmit={(e) => {
           e.preventDefault();
           if (!name.trim()) return;
-          actions.addStaff(clinicId, name.trim(), role, email.trim() || `${name.trim().toLowerCase().replace(/\s+/g, ".")}@${clinicId}.vet`);
+          const handle = name
+            .trim()
+            .toLowerCase()
+            .replace(/^dr\.?\s*/, "")
+            .replace(/[^a-z]+/g, ".")
+            .replace(/^\.|\.$/g, "");
+          actions.addStaff(clinicId, name.trim(), role, email.trim() || `${handle}@${clinicId}.vet`);
           toast(`${name.trim()} invited: their ${ROLE_LABELS[role]} path is assigned`, "good");
           onClose();
         }}

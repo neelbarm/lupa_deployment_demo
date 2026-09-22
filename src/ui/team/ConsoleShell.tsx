@@ -39,6 +39,16 @@ export function ConsoleShell({ children }: { children: ReactNode }) {
   }, [state.events]);
 
   useEffect(() => setSwitcher(false), [path]);
+  useEffect(() => {
+    if (!switcher) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setSwitcher(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [switcher]);
+  const pick = (to: string) => {
+    setSwitcher(false);
+    go(to);
+  };
 
   return (
     <div className="console">
@@ -58,11 +68,11 @@ export function ConsoleShell({ children }: { children: ReactNode }) {
             <>
               <div className="switcher-scrim" onClick={() => setSwitcher(false)} />
               <div className="switcher-menu" role="menu">
-                <button role="menuitem" onClick={() => go("/team")} className={!clinic ? "is-on" : ""}>
+                <button role="menuitem" onClick={() => pick("/team")} className={!clinic ? "is-on" : ""}>
                   <Icon name="grid" size={15} /> All clinics
                 </button>
                 {state.clinics.map((c) => (
-                  <button role="menuitem" key={c.id} onClick={() => go(`/team/clinic/${c.id}`)} className={c.id === current ? "is-on" : ""}>
+                  <button role="menuitem" key={c.id} onClick={() => pick(`/team/clinic/${c.id}`)} className={c.id === current ? "is-on" : ""}>
                     <span className={`stage-dot stage-${c.stage.toLowerCase().replace(/\s/g, "")}`} />
                     <span>
                       {c.name}
@@ -109,9 +119,11 @@ export function ConsoleShell({ children }: { children: ReactNode }) {
               </Link>
             </>
           )}
-          <button className="chrome-icon" onClick={() => setConfirmReset(true)} title="Reset demo data" aria-label="Reset demo data">
-            <Icon name="refresh" size={17} />
-          </button>
+          {!embedded && (
+            <button className="chrome-icon" onClick={() => setConfirmReset(true)} title="Reset demo data" aria-label="Reset demo data">
+              <Icon name="refresh" size={17} />
+            </button>
+          )}
           <span className="chrome-me" title={`${SPECIALIST} · Deployment Specialist`}>
             <Avatar name={SPECIALIST} size={30} />
           </span>

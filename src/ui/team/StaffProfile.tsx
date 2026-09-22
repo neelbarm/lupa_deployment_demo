@@ -123,7 +123,7 @@ export function StaffProfile({ clinicId, staffId }: { clinicId: string; staffId:
                   </span>
                   <span className="record-pills">
                     {m.overdue && <span className="pill pill-crit">Overdue</span>}
-                    <ProficiencyPill p={m.proficiency} />
+                    <ProficiencyPill p={m.proficiency} recert={m.recert} />
                   </span>
                   <span className="num record-score">{m.best ? `${m.best.score}%` : "–"}</span>
                   <span className="fine record-attempts">

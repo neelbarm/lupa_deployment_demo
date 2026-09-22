@@ -33,42 +33,68 @@ export interface ModuleStatus {
   /** Deadline for certification, spread across the training window. */
   dueDate: number;
   overdue: boolean;
+  /** Previously certified, but the deployment team asked for a retake. */
+  recert: boolean;
 }
 
-/** Module i of n is due at an even share of the window from kickoff to 3 days before go-live. */
-export function moduleDueDate(clinic: Clinic, index: number, total: number): number {
-  const end = clinic.goLiveDate - 3 * DAY;
-  return clinic.kickoffDate + ((end - clinic.kickoffDate) * (index + 1)) / Math.max(1, total);
+/**
+ * A staff member's training window: from kickoff (or their invite, if they joined later)
+ * to 3 days before go-live, with at least a week for late joiners.
+ */
+export function staffWindow(clinic: Clinic, s: Staff): { start: number; end: number } {
+  const start = s.invitedAt > clinic.kickoffDate + DAY ? s.invitedAt : clinic.kickoffDate;
+  const end = Math.max(clinic.goLiveDate - 3 * DAY, start + 7 * DAY);
+  return { start, end };
+}
+
+/** Module i of n is due at an even share of the training window. */
+export function moduleDueDate(start: number, end: number, index: number, total: number): number {
+  return start + ((end - start) * (index + 1)) / Math.max(1, total);
 }
 
 export function moduleStatuses(state: AppState, s: Staff, now = Date.now()): ModuleStatus[] {
   const ids = assignedModules(s);
+  const pathLength = ROLE_PATHS[s.role].length;
   const clinic = state.clinics.find((c) => c.id === s.clinicId)!;
+  const { start, end } = staffWindow(clinic, s);
   const mine = attemptsFor(state, s.id);
   let prevPassed = true;
   return ids.map((moduleId, i) => {
     const list = mine.filter((a) => a.moduleId === moduleId).sort((a, b) => a.finishedAt - b.finishedAt);
-    const passed = list.filter((a) => a.passed && !a.superseded);
-    const best = [...(passed.length ? passed : list)].sort((a, b) => b.score - a.score)[0];
+    // Passes superseded by a recertification request stay on record but no longer count.
+    const live = list.filter((a) => !a.superseded);
+    const passed = live.filter((a) => a.passed);
+    const everPassed = list.some((a) => a.passed);
+    const recert = !passed.length && everPassed && live.length === 0;
+    const best = [...(passed.length ? passed : live)].sort((a, b) => b.score - a.score)[0];
     const inProg = state.progress.some((p) => p.staffId === s.id && p.moduleId === moduleId);
     let proficiency: Proficiency;
     if (passed.length) proficiency = best!.score >= 95 && best!.errors === 0 ? "mastered" : "proficient";
-    else if (list.length) proficiency = "retrain";
+    else if (live.length || recert) proficiency = "retrain";
     else if (inProg) proficiency = "in_progress";
     else proficiency = "not_started";
+    // A recertification request doesn't re-lock modules the learner already certified on.
     const unlocked = prevPassed;
-    prevPassed = prevPassed && passed.length > 0;
-    const dueDate = moduleDueDate(clinic, i, ids.length);
+    prevPassed = prevPassed && everPassed;
+    let dueDate =
+      i < pathLength ? moduleDueDate(start, end, i, pathLength) : (s.extraAssignedAt?.[moduleId] ?? end - 3 * DAY) + 3 * DAY;
+    if (recert) {
+      // Recerts made before supersededAt existed fall back to the activity log.
+      const logged = state.events.find((e) => e.type === "recert" && e.staffId === s.id && e.moduleId === moduleId)?.ts ?? 0;
+      const askedAt = Math.max(logged, ...list.map((a) => a.supersededAt ?? 0));
+      if (askedAt) dueDate = Math.max(dueDate, askedAt + 3 * DAY);
+    }
     return {
       moduleId,
       proficiency,
       best,
       attempts: list.length,
       failedAttempts: list.filter((a) => !a.passed).length,
-      firstTryPass: list.length > 0 && list[0].passed && !list[0].superseded,
+      firstTryPass: list.length > 0 && list[0].passed,
       unlocked,
       dueDate,
       overdue: passed.length === 0 && now > dueDate,
+      recert,
     };
   });
 }
@@ -121,7 +147,8 @@ export function summarizeStaff(state: AppState, s: Staff, now = Date.now()): Sta
   const totalMinutes = Math.round(attemptsFor(state, s.id).reduce((a, b) => a + b.durationSec, 0) / 60);
 
   const anyActivity = tried.length > 0 || state.progress.some((p) => p.staffId === s.id);
-  const pace = expectedPace(clinic, now);
+  const { start, end } = staffWindow(clinic, s);
+  const pace = Math.min(1, Math.max(0, (now - start) / Math.max(DAY, end - start)));
   const retrainHeavy = modules.some((m) => !isCertified(m) && m.failedAttempts >= 2);
   const daysToGoLive = (clinic.goLiveDate - now) / DAY;
   const inactiveDays = s.lastActiveAt ? (now - s.lastActiveAt) / DAY : Infinity;

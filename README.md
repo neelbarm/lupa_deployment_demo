@@ -2,6 +2,8 @@
 
 A clinic onboarding CRM for [Lupa](https://lupapets.com/us/) deployments.
 
+> Independent concept demo by Neel Barmecha for a Lupa Deployment Specialist interview. Not an official Lupa product, and not affiliated with or endorsed by Lupa. All clinics, people and data are fictional.
+
 **Live demo:** https://lupadeploymentdemo.vercel.app/ (start with [Presenter mode](https://lupadeploymentdemo.vercel.app/#/present))
 
 Deployments fail when clinic staff don't know the new workflow. Lupa Academy fixes the handoff:
@@ -54,6 +56,6 @@ The ⚡ button on a clinic simulates staff activity, so the dashboard moves even
 | Local-first store synced live across panes and tabs (BroadcastChannel) | `src/store.ts` |
 | Demo data: 4 clinics, 33 staff | `src/data/seed.ts` |
 
-Data lives in each visitor's browser, so everyone who opens the link gets their own sandbox. Use **Reset demo data** to start over. To make it multi-user, swap the `commit`/`BroadcastChannel` layer in `src/store.ts` for an API or a realtime database. The rest of the app only uses `useAppState()` and `actions`.
+Data lives in each visitor's browser, so everyone who opens the link gets their own sandbox. Dates stay relative: a visitor returning days later still sees go-live the same distance away. The site asks search engines not to index it. Use **Reset demo data** to start over. To make it multi-user, swap the `commit`/`BroadcastChannel` layer in `src/store.ts` for an API or a realtime database. The rest of the app only uses `useAppState()` and `actions`.
 
 The deployment specialist's name is set in `SPECIALIST` in `src/data/seed.ts`.
